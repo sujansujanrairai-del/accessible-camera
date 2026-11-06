@@ -1,0 +1,6 @@
+{
+  "name": "Accessible Camera and Gallery",
+  "description": "An accessible, open-source camera and gallery app for Android by Sujan Rai from the Blind Tech Nexus team.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

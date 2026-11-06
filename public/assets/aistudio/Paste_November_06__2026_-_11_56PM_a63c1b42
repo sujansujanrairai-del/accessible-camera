@@ -1,0 +1,567 @@
+ROLE
+You are a senior Android engineer and accessibility specialist. Build a production-ready Android app named "Accessible Camera and Gallery". Keep accessibility as the highest priority. Use a very simple interface. Do not use emojis anywhere in the app, UI strings, logs, documentation, or code.
+
+OBJECTIVE
+Create a complete Android application that provides camera, video recording, gallery browsing, editing, and settings with strong voice guidance and full screen-reader accessibility. Support every camera and gallery feature that the device hardware and Android platform can support. Where a feature is unsupported, hide it or disable it and provide a clear spoken and visible reason. Do not simulate unsupported features.
+
+TECHNICAL CONSTRAINTS
+- Platform: Android, Kotlin, Jetpack Compose, Material 3.
+- Minimum SDK: 26. Target and compile against the latest stable Android SDK.
+- Architecture: MVVM with clean separation of UI, domain, and data layers. Use Hilt for dependency injection, Coroutines and Flow for asynchronous work, Navigation Compose, DataStore for preferences, Room for gallery metadata, MediaStore for media access, Media3 for playback, Coil for thumbnails.
+- Camera: CameraX for standard capture and Camera2 interop for advanced manual controls where supported.
+- Voice: Android TextToSpeech for guidance. Optional on-device SpeechRecognizer for voice commands. Do not require cloud processing for core accessibility.
+- Use scoped storage and MediaStore. Do not request broad storage permissions unless strictly required.
+- Provide a working Gradle project with build and run instructions.
+
+CORE PRINCIPLES
+1. Accessibility first: TalkBack compatibility, logical focus order, meaningful content descriptions, large touch targets, high contrast, scalable text, haptic and audio feedback, no reliance on color alone.
+2. Simple interface: primary actions always visible. Advanced camera and gallery features use progressive disclosure through accessible bottom sheets, dialogs, or expandable panels.
+3. Voice guidance: every important state change, control focus, value change, error, and confirmation must be announced. Avoid duplicate announcements with TalkBack.
+4. Device capability awareness: detect supported camera features and expose only valid controls. Disabled controls must announce why they are unavailable.
+5. Production-grade logic: predictable state machine, lifecycle safety, concurrency control, permission recovery, error handling, and state restoration.
+6. Privacy: local-first. No analytics or network use without explicit consent. Location tagging is off by default.
+
+SCREENS AND NAVIGATION
+- Welcome screen: app name, short app description, permission explanation, and a large Start button. Announce the screen title and purpose when opened.
+- Main screen: hosts a tabbed interface with four tabs: Photo, Video, Gallery, Settings. Use accessible tab labels and announce tab changes.
+- Photo tab: camera preview, mode selector, shutter button, flash, timer, zoom, focus, exposure, gallery thumbnail, and access to advanced controls.
+- Video tab: camera preview, record and pause controls, recording timer, audio toggle, resolution and frame rate controls, zoom, flash or torch, and access to advanced controls.
+- Gallery tab: grid and list views, albums, search, filters, sort, multi-select, item details, edit, share, delete, trash, restore, and slideshow.
+- Settings tab: voice guidance, speech rate, verbosity, haptics, theme and contrast, font scale, grid, level, save location, default resolution, timer, geotagging, watermark, and reset options.
+
+CAMERA FEATURE REQUIREMENTS
+Support all device-capable features, including:
+- Photo, video, portrait, night, panorama, slow motion, time lapse, pro or manual mode, HDR, flash, torch, timer, grid, level, mirror front camera, location tagging, watermark, RAW and JPEG where supported, aspect ratio and resolution selection.
+- Zoom, tap to focus, focus lock, exposure compensation, exposure lock, white balance, ISO, shutter speed, focus mode, metering mode, and stabilization where supported.
+- Front and back camera switching, wide, ultrawide, and telephoto lenses where supported, burst capture, volume key shutter, orientation lock, review after capture, and countdown announcements.
+- Video: resolution, frame rate, bitrate, codec, audio recording, pause and resume, zoom during recording, photo capture during video where supported, and recording timer announcements.
+- Every control must have an accessible label, current value, and spoken feedback on change. Unsupported controls must be disabled with a spoken reason.
+
+GALLERY FEATURE REQUIREMENTS
+Support all device-capable gallery features, including:
+- Browse by date, albums, favorites, screenshots, videos, and recently deleted.
+- Grid and list views, thumbnail size, search, filters, sort order, multi-select, select all, share, delete, move to trash, restore, permanently delete with confirmation, and undo where possible.
+- Item details: date, time, size, resolution, duration, path, album, and metadata.
+- Media viewer: swipe or accessible next and previous controls, play and pause video, seek, zoom, rotate, slideshow, cast where available, and share.
+- Editing: crop, rotate, flip, adjust brightness, contrast, saturation, and exposure, apply filters, annotate, draw, add text, trim video, mute video, and export. Destructive edits require confirmation and support undo where feasible.
+
+VOICE GUIDANCE REQUIREMENTS
+- Provide a global voice guidance toggle independent of TalkBack.
+- Use TextToSpeech with configurable speech rate, pitch, and verbosity.
+Guide the user to help align the face very properly. Use google mlkit for detection and position alignment.
+- Use a single TTS queue with interrupt rules. Do not interrupt critical error announcements. Debounce rapid value changes such as zoom or exposure.
+- Provide optional voice commands through on-device SpeechRecognizer, activated explicitly by the user, not always listening. Support commands such as take photo, start video, stop video, open gallery, next, previous, back, select, delete, confirm, and cancel. Require confirmation for destructive actions.
+- Provide haptic and short audio cues for capture, recording start and stop, focus lock, errors, and successful actions.
+- Avoid duplicate announcements when TalkBack is active. Use accessibility live regions and announcements appropriately.
+
+ACCESSIBILITY ACCEPTANCE CRITERIA
+- All interactive elements have accessible names, roles, states, and hints.
+- Focus order follows visual and logical order. Focus is restored after dialogs, permission flows, and navigation.
+- Touch targets are at least 48 dp. Primary camera controls are larger.
+- Text supports system font scaling without clipping. Layout supports large text and landscape.
+- Contrast meets WCAG AA. Provide high-contrast theme and color correction support.
+- No information is conveyed by color alone. Icons have text labels or content descriptions.
+- All controls are operable with TalkBack, Switch Access, and keyboard navigation.
+- Camera preview includes an accessible alternative description of the current mode and state. Also announces current scene description in a selected interval in settings if it is on. On device description with mlkit if supported by this or any other alternative.
+- Permission rationale is accessible and explains why each permission is needed.
+
+
+LOGIC AND STATE REQUIREMENTS
+- Implement a single source of truth camera state machine: idle, initializing, ready, focusing, capturing, recording, paused, saving, error.
+- Prevent concurrent captures. Disable shutter and record controls while saving or transitioning.
+- Release camera resources on lifecycle stop and restore state on resume where possible.
+- Detect device capabilities at startup and store them in a capability registry. UI derives availability from this registry.
+- Handle permission denial, permanent denial, and settings recovery with clear spoken guidance.
+- Save media through MediaStore. Use trash and undo for deletions where possible. Confirm permanent deletion.
+- Handle orientation changes, low storage, camera in use by another app, and interrupted recordings.
+- Use paging and lazy loading for gallery thumbnails. Never block the main thread.
+- Provide human-readable and spoken error messages with retry actions.
+
+OUTPUT RULES
+- Do not use emojis.
+- Keep UI text short, clear, and actionable.
+- Prefer standard Android accessibility APIs over custom workarounds.
+- Make reasonable assumptions where details are missing and document them.
+- Build the app as a coherent working product, not isolated code snippets.
+-
+I have given you an example yaml for GitHub workflow build. Implement similarly.
+After all, commit and open a pool request. Then watch and monitor the CI workflow build. If the build succeeds, then that is fine. If the build fails, rework until a successful build. After a successful build, merge the pool request correctly.
+Before anything, use websearch tool, read all necessary documentations, guides, instructions, and assistances as necessary. Think, plan and build.
+Note: the developer is Sujan Rai from the blind tech nexus team. So, include it in such suitable places. The main description is An accessible, open-source camera and gallery app for Android.
+.github/workflows/android.yml example:
+name: Android CI and Release APKs
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Test and build unsigned release APKs
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          accept-android-sdk-licenses: true
+
+      - name: Grant execute permissions for scripts
+        shell: bash
+        run: |
+          chmod +x gradlew
+          chmod +x scripts/*.sh scripts/lib/*.sh .github/scripts/*.sh .github/scripts/*.py 2>/dev/null || true
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Check sound assets and translations
+        shell: bash
+        run: python3 .github/scripts/check_sound_and_string_consistency.py
+
+      - name: Test release archive handling
+        run: python3 -m unittest discover -s .github/scripts/tests -v
+
+      - name: Run unit tests
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace --console=plain -Djava.awt.headless=true :app:testDebugUnitTest 2>&1 | tee "$RUNNER_TEMP/gradle-test.log"
+
+      - name: Surface unit test failure details
+        if: failure()
+        shell: bash
+        run: |
+          log_file="$RUNNER_TEMP/gradle-test.log"
+          if [[ -f "$log_file" ]]; then
+            test_failures=""
+            if [[ -f ".github/scripts/summarize_test_failures.py" ]]; then
+              test_failures="$(python3 .github/scripts/summarize_test_failures.py || true)"
+            fi
+            diagnostics="$(grep -E '^(e: |w: |> Task .* FAILED)' "$log_file" | tail -n 25 || true)"
+            if [[ -n "$test_failures" ]]; then
+              details="$test_failures"
+              if [[ -n "$diagnostics" ]]; then
+                details="$(printf '%s\n\n%s' "$diagnostics" "$test_failures")"
+              fi
+            elif [[ -n "$diagnostics" ]]; then
+              failure_line="$(grep -n -m 1 '^FAILURE: Build failed' "$log_file" | cut -d: -f1 || true)"
+              if [[ -n "$failure_line" ]]; then
+                failure_end=$((failure_line + 20))
+                failure_details="$(sed -n "${failure_line},${failure_end}p" "$log_file")"
+              else
+                failure_details="$(tail -n 20 "$log_file")"
+              fi
+              details="$(printf '%s\n\n%s' "$diagnostics" "$failure_details")"
+            else
+              failure_line="$(grep -n -m 1 '^FAILURE: Build failed' "$log_file" | cut -d: -f1 || true)"
+              if [[ -n "$failure_line" ]]; then
+                failure_end=$((failure_line + 20))
+                details="$(sed -n "${failure_line},${failure_end}p" "$log_file")"
+              else
+                details="$(tail -n 20 "$log_file")"
+              fi
+            fi
+            details="${details:0:3500}"
+            {
+              echo '### Gradle unit test failure details'
+              echo '```text'
+              printf '%s\n' "$details"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            details="${details//'%'/'%25'}"
+            details="${details//$'\n'/'%0A'}"
+            details="${details//$'\r'/'%0D'}"
+            echo "::error file=.github/workflows/android.yml,line=51,title=Gradle unit tests failed::$details"
+          fi
+
+      - name: Assemble production release APKs
+        shell: bash
+        run: |
+          set -o pipefail
+          # Configure init script to build unsigned release APKs cleanly in CI environment
+          init_script="$RUNNER_TEMP/disable-signing.gradle"
+          cat << 'EOF' > "$init_script"
+          allprojects {
+              afterEvaluate { project ->
+                  if (project.hasProperty('android')) {
+                      project.android.buildTypes.release.signingConfig = null
+                  }
+              }
+          }
+          EOF
+          ./gradlew --no-daemon --stacktrace --console=plain -I "$init_script" :app:assembleRelease 2>&1 | tee "$RUNNER_TEMP/gradle-release.log"
+
+      - name: Surface release build failure details
+        if: failure()
+        shell: bash
+        run: |
+          log_file="$RUNNER_TEMP/gradle-release.log"
+          if [[ -f "$log_file" ]]; then
+            failure_line="$(grep -n -m 1 '^FAILURE: Build failed' "$log_file" | cut -d: -f1 || true)"
+            diagnostics="$(grep -E '^(e: |w: |> Task .* FAILED)' "$log_file" | tail -n 12 || true)"
+            if [[ -n "$failure_line" ]]; then
+              failure_end=$((failure_line + 24))
+              failure_details="$(sed -n "${failure_line},${failure_end}p" "$log_file")"
+            else
+              failure_details="$(tail -n 24 "$log_file")"
+            fi
+            details="$(printf '%s\n%s\n' "$diagnostics" "$failure_details")"
+            details="${details:0:3500}"
+            {
+              echo '### Gradle release build failure details'
+              echo '```text'
+              printf '%s\n' "$details"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            details="${details//'%'/'%25'}"
+            details="${details//$'\n'/'%0A'}"
+            details="${details//$'\r'/'%0D'}"
+            echo "::error file=.github/workflows/android.yml,line=90,title=Gradle release build failed::$details"
+          fi
+
+      # ---------------------------------------------------------------------
+      # Release packaging
+      #
+      # Two artifacts are produced on purpose:
+      #
+      #   open-fire-release.apk           signed, verified, directly installable
+      #   open-fire-release-unsigned.apk  pristine unsigned package, for the
+      #                                   Play Console / distributor signing
+      #
+      # Shipping only an unsigned APK was what produced "The package appears to
+      # be invalid": an unsigned APK never installs, and the JAR-only signature
+      # most tools add when signing it by hand is refused by Android 11+ for an
+      # app that targets API 30+ (see docs/INSTALLING.md).
+      # ---------------------------------------------------------------------
+
+      - name: Prepare canonical release APKs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          output_dir="app/build/outputs/apk/release"
+          artifact_dir="release-artifacts"
+
+          if [[ ! -d "$output_dir" ]]; then
+            echo "::error::Gradle did not create the release APK output directory: $output_dir"
+            exit 1
+          fi
+
+          shopt -s nullglob
+          apks=("$output_dir"/*.apk)
+          if [[ ${#apks[@]} -eq 0 ]]; then
+            echo "::error::No release APKs found in $output_dir"
+            exit 1
+          fi
+
+          sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          if [[ -z "$sdk_root" || ! -d "$sdk_root/build-tools" ]]; then
+            echo "::error::Android SDK build-tools were not found"
+            exit 1
+          fi
+          mapfile -t apksigners < <(find "$sdk_root/build-tools" -type f -name apksigner -print | sort -V)
+          if [[ ${#apksigners[@]} -eq 0 ]]; then
+            echo "::error::apksigner was not found in the Android SDK build-tools"
+            exit 1
+          fi
+          apksigner="${apksigners[${#apksigners[@]}-1]}"
+
+          mapfile -t zipaligns < <(find "$sdk_root/build-tools" -type f -name zipalign -print | sort -V)
+          if [[ ${#zipaligns[@]} -eq 0 ]]; then
+            echo "::error::zipalign was not found in the Android SDK build-tools"
+            exit 1
+          fi
+          zipalign="${zipaligns[${#zipaligns[@]}-1]}"
+
+          # Flat artifact directory so the ZIP holds the APKs directly.
+          rm -rf "$artifact_dir"
+          mkdir -p "$artifact_dir"
+          prepared_apks=()
+          for source_apk in "${apks[@]}"; do
+            filename="$(basename "$source_apk")"
+            if [[ "$filename" != *-unsigned.apk ]]; then
+              echo "::error::Expected an unsigned APK filename, got $filename"
+              exit 1
+            fi
+
+            # Check APK zip integrity
+            unzip -tq "$source_apk"
+
+            # The signing config must have been disabled for this build; an APK that
+            # is already signed cannot be re-signed cleanly later.
+            if "$apksigner" verify "$source_apk" >/dev/null 2>&1; then
+              echo "::error::Expected an unsigned release APK, but $source_apk has a valid signature"
+              exit 1
+            fi
+
+            destination_apk="$artifact_dir/${filename/app-/open-fire-}"
+            cp "$source_apk" "$destination_apk"
+            prepared_apks+=("$destination_apk")
+            echo "Prepared unsigned APK: $destination_apk"
+          done
+
+          # shellcheck source=.github/scripts/ci-helpers.sh
+          source .github/scripts/ci-helpers.sh
+
+          # Canonicalize (one consistent set of ZIP headers, stored and aligned
+          # sound assets, no Data Descriptors) BEFORE signing: rewriting the ZIP
+          # after signing drops the APK Signing Block, which is the "invalid
+          # package" failure on the device.
+          run_annotated "canonicalize release APK" \
+            python3 .github/scripts/prepare_release_archive.py normalize \
+            --zipalign "$zipalign" \
+            "${prepared_apks[@]}"
+
+          for prepared_apk in "${prepared_apks[@]}"; do
+            run_annotated "unzip -t $prepared_apk" unzip -tq "$prepared_apk"
+            run_annotated "zipalign -c $prepared_apk" "$zipalign" -c 4 "$prepared_apk"
+            if "$apksigner" verify "$prepared_apk" >/dev/null 2>&1; then
+              echo "::error::Expected $prepared_apk to remain unsigned after alignment"
+              exit 1
+            fi
+          done
+
+      - name: Verify release APK
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # shellcheck source=.github/scripts/ci-helpers.sh
+          source .github/scripts/ci-helpers.sh
+
+          # The release artifact must stay unsigned, aligned and structurally valid.
+          run_annotated "verify unsigned APK" \
+            bash scripts/verify-installable-apk.sh release-artifacts/open-fire-release-unsigned.apk
+
+          sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          mapfile -t apksigners < <(find "$sdk_root/build-tools" -type f -name apksigner -print | sort -V)
+          apksigner="${apksigners[${#apksigners[@]}-1]}"
+          mapfile -t zipaligns < <(find "$sdk_root/build-tools" -type f -name zipalign -print | sort -V)
+          zipalign="${zipaligns[${#zipaligns[@]}-1]}"
+
+          if "$apksigner" verify release-artifacts/open-fire-release-unsigned.apk >/dev/null 2>&1; then
+            echo "::error::open-fire-release-unsigned.apk must not be signed"
+            exit 1
+          fi
+
+          for apk in release-artifacts/*.apk; do
+            run_annotated "unzip -t $apk" unzip -tq "$apk"
+            run_annotated "zipalign -c $apk" "$zipalign" -c 4 "$apk"
+            run_annotated "java VerifyZipStreams $apk" \
+              java .github/scripts/VerifyZipStreams.java "$apk"
+          done
+
+      - name: Round-trip the release APK through apksig
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # The reported failure
+          #   W: Malformed ZIP entry: assets/sounds/medkit.mp3
+          #   W: invalid stored block lengths
+          # comes from apksig: it takes an entry's compression method and compressed
+          # size from the Central Directory and inflates that byte range. Signing with
+          # the JAR (v1) scheme forces apksig to inflate every entry, so a header that
+          # disagrees with its payload breaks this step instead of the published
+          # artifact. This step also exercises the documented signing flow
+          # (scripts/sign-release-apk.sh with an explicit keystore) end to end.
+          keystore="$RUNNER_TEMP/ci-signing.p12"
+          rm -f "$keystore"
+          keytool -genkeypair \
+            -keystore "$keystore" \
+            -storetype PKCS12 \
+            -storepass android \
+            -keypass android \
+            -alias ci-release \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 1 \
+            -dname "CN=Open Fire CI"
+
+          # shellcheck source=.github/scripts/ci-helpers.sh
+          source .github/scripts/ci-helpers.sh
+
+          signed="$RUNNER_TEMP/open-fire-release-roundtrip.apk"
+          rm -f "$signed"
+          run_annotated "sign round-trip APK" \
+            bash scripts/sign-release-apk.sh \
+            release-artifacts/open-fire-release-unsigned.apk \
+            --out "$signed" \
+            --ks "$keystore" \
+            --ks-type PKCS12 \
+            --ks-alias ci-release \
+            --ks-pass android \
+            --key-pass android
+
+          sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          mapfile -t apksigners < <(find "$sdk_root/build-tools" -type f -name apksigner -print | sort -V)
+          apksigner="${apksigners[${#apksigners[@]}-1]}"
+
+          # The v1 (JAR) signature must really exist: it is what forced apksig to
+          # inflate every entry above.
+          if ! unzip -l "$signed" | grep -Fq "META-INF/MANIFEST.MF"; then
+            echo "::error::the signed APK has no JAR (v1) signature"
+            exit 1
+          fi
+
+          # apksig only checks the JAR (v1) scheme for platforms below API 24, so
+          # verify for API 23 as well; that makes apksig inflate and digest every
+          # entry again.
+          legacy_report="$( "$apksigner" verify --verbose --min-sdk-version 23 "$signed" )"
+          printf '%s\n' "$legacy_report"
+          if ! grep -Eq 'v1 scheme \(JAR signing\): true' <<< "$legacy_report"; then
+            echo "::error::the signed APK does not verify with the JAR (v1) scheme for API 23"
+            exit 1
+          fi
+
+          unzip -tq "$signed"
+          java .github/scripts/VerifyZipStreams.java "$signed"
+          rm -f "$signed"
+
+      - name: Build the release ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          archive_zip="release-artifacts/open-fire-release-apks.zip"
+          shopt -s nullglob
+          apks=(release-artifacts/*.apk)
+          if [[ ${#apks[@]} -eq 0 ]]; then
+            echo "::error::No release APKs to package"
+            exit 1
+          fi
+
+          # shellcheck source=.github/scripts/ci-helpers.sh
+          source .github/scripts/ci-helpers.sh
+
+          # `package` verifies the APKs as they are (it never rewrites a signed
+          # package) and stores them without recompression in a seekable ZIP.
+          run_annotated "prepare_release_archive.py package" \
+            python3 .github/scripts/prepare_release_archive.py package \
+            --output "$archive_zip" \
+            "${apks[@]}"
+
+          run_annotated "unzip -t $archive_zip" unzip -tq "$archive_zip"
+          run_annotated "java VerifyZipStreams $archive_zip" \
+            java .github/scripts/VerifyZipStreams.java "$archive_zip" "${apks[@]}"
+
+      - name: Publish release APK summary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          files=()
+          archive="release-artifacts/open-fire-release-apks.zip"
+          if [[ -f "$archive" ]]; then
+            files+=("$archive")
+          fi
+          for apk in release-artifacts/*.apk; do
+            if [[ -f "$apk" ]]; then
+              files+=("$apk")
+            fi
+          done
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "No release artifacts to summarize"
+            exit 0
+          fi
+
+          {
+            echo '### Open Fire Release APKs'
+            echo
+            echo 'Application ID: `com.blindtechnexus.openfire`'
+            echo
+            echo '| File | Purpose | Size | SHA-256 Checksum |'
+            echo '| --- | --- | --- | --- |'
+            for file in "${files[@]}"; do
+              filename="$(basename "$file")"
+              case "$filename" in
+                open-fire-release-unsigned.apk) purpose='Unsigned release package for distribution / your signing key' ;;
+                *) purpose='Release archive, stored without recompression' ;;
+              esac
+              size="$(du -h "$file" | cut -f1)"
+              sha="$(sha256sum "$file" | cut -d' ' -f1)"
+              printf '| `%s` | %s | %s | `%s` |\n' "$filename" "$purpose" "$size" "$sha"
+            done
+            echo
+            echo 'Sign `open-fire-release-unsigned.apk` with your release key before installing:'
+            echo
+            echo '```sh'
+            echo 'scripts/sign-release-apk.sh open-fire-release-unsigned.apk --out open-fire-release.apk --ks my-key.jks'
+            echo 'adb install -r open-fire-release.apk'
+            echo '```'
+            echo
+            echo 'If Android reports "The package appears to be invalid", run'
+            echo '`scripts/verify-installable-apk.sh <file.apk>` to see exactly which check fails.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload release APKs
+        uses: actions/upload-artifact@v7
+        with:
+          name: open-fire-release-apks.zip
+          path: release-artifacts/open-fire-release-apks.zip
+          archive: false
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Download uploaded release ZIP for verification
+        uses: actions/download-artifact@v8
+        with:
+          name: open-fire-release-apks.zip
+          path: verified-download
+          skip-decompress: true
+          digest-mismatch: error
+
+      - name: Verify downloaded release ZIP integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t downloaded_files < <(find verified-download -maxdepth 1 -type f | sort)
+          if [[ ${#downloaded_files[@]} -ne 1 ]]; then
+            echo "::error::Expected exactly 1 downloaded artifact file, found ${#downloaded_files[@]}"
+            exit 1
+          fi
+          downloaded_zip="${downloaded_files[0]}"
+          expected_args=()
+          for apk in release-artifacts/*.apk; do
+            expected_args+=(--expected-apk "$apk")
+          done
+          cmp release-artifacts/open-fire-release-apks.zip "$downloaded_zip"
+          unzip -tq "$downloaded_zip"
+          python3 .github/scripts/prepare_release_archive.py verify "$downloaded_zip" "${expected_args[@]}"
+          java .github/scripts/VerifyZipStreams.java "$downloaded_zip"
+
+          # The bytes a user downloads must contain the same installable APK that was
+          # verified above, so extract it again and re-check the signature.
+          # shellcheck source=.github/scripts/ci-helpers.sh
+          source .github/scripts/ci-helpers.sh
+
+          rm -rf verified-download/extracted
+          mkdir -p verified-download/extracted
+          unzip -q "$downloaded_zip" -d verified-download/extracted
+          run_annotated "verify downloaded unsigned release APK" \
+            bash scripts/verify-installable-apk.sh \
+            verified-download/extracted/open-fire-release-unsigned.apk
